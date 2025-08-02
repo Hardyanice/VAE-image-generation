@@ -1,25 +1,27 @@
-import streamlit as st
-import numpy as np
+import gradio as gr
 import tensorflow as tf
+import numpy as np
 import matplotlib.pyplot as plt
 
-# Load decoder only
-@st.cache_resource
-def load_decoder():
-    return tf.keras.models.load_model("vae_decoder.h5", compile=False)
+# Load only decoder model
+model = tf.keras.models.load_model("vae_model.h5")
 
-decoder = load_decoder()
-latent_dim = decoder.input_shape[1]
+def generate_digit(z1, z2):
+    z = np.array([[z1, z2]])
+    image = model.predict(z)[0]
+    return image.squeeze()
 
-st.title("VAE Image Generator")
-n_images = st.slider("Number of images to generate", 1, 10, 5)
+# Interface
+iface = gr.Interface(
+    fn=generate_digit,
+    inputs=[
+        gr.Slider(-3, 3, step=0.1, label="Latent z[0]"),
+        gr.Slider(-3, 3, step=0.1, label="Latent z[1]")
+    ],
+    outputs=gr.Image(shape=(28, 28), image_mode='L', label="Generated Digit"),
+    title="VAE Digit Generator",
+    description="Move the sliders to explore the VAE latent space."
+)
 
-if st.button("Generate"):
-    random_latent_vectors = np.random.normal(size=(n_images, latent_dim))
-    generated_images = decoder.predict(random_latent_vectors)
-
-    fig, axes = plt.subplots(1, n_images, figsize=(n_images * 2, 2))
-    for i in range(n_images):
-        axes[i].imshow(generated_images[i].squeeze(), cmap="gray")
-        axes[i].axis("off")
-    st.pyplot(fig)
+if __name__ == "__main__":
+    iface.launch()
