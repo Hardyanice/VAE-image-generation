@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load only decoder model
-model = tf.keras.models.load_model("vae_model.h5")
+model = tf.keras.models.load_model("vae_decoder.h5")
 
 def generate_digit(z1, z2):
     z = np.array([[z1, z2]])
@@ -25,3 +25,4 @@ iface = gr.Interface(
 
 if __name__ == "__main__":
     iface.launch()
+
